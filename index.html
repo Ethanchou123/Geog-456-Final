@@ -226,7 +226,7 @@ function f() {
     layerControl.removeLayer(raster3);
 
     raster1 = L.imageOverlay('./Rasters/Ozone' + sliderYear + '.png', bounds);
-    raster2 = L.imageOverlay('./Rasters/Pm' + sliderYear + '.png', bounds);
+    raster2 = L.imageOverlay('./Rasters/PM' + sliderYear + '.png', bounds);
     raster3 = L.imageOverlay('./Rasters/Nitrogen' + sliderYear + '.png', bounds);
 
     layerControl.addBaseLayer(raster1, 'Ozone'); 
