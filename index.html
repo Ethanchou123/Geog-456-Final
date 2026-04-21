@@ -1,0 +1,282 @@
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Final Project</title>
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+        crossorigin=""/>
+        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+        crossorigin=""></script>
+        <script src="./json/2000_Merge.js"></script>
+        <script src="./json/2001_Merge.js"></script>
+        <script src="./json/2002_Merge.js"></script>
+        <script src="./json/2003_Merge.js"></script>
+        <script src="./json/2004_Merge.js"></script>
+        <script src="./json/2005_Merge.js"></script>
+        <script src="./json/2006_Merge.js"></script>
+        <script src="./json/2007_Merge.js"></script>
+        <script src="./json/2008_Merge.js"></script>
+        <script src="./json/2009_Merge.js"></script>
+        <script src="./json/2010_Merge.js"></script>
+        <script src="./json/2011_Merge.js"></script>
+        <script src="./json/2012_Merge.js"></script>
+        <script src="./json/2013_Merge.js"></script>
+        <script src="./json/2014_Merge.js"></script>
+        <script src="./json/2015_Merge.js"></script>
+        <script src="./json/2016_Merge.js"></script>
+        <script src="./json/2017_Merge.js"></script>
+        <script src="./json/2018_Merge.js"></script>
+        <script src="./json/2019_Merge.js"></script>
+        <script src="./json/2020_Merge.js"></script>
+        <script src="./json/2021_Merge.js"></script>
+        <script src="./json/2022_Merge.js"></script>
+        <script src="./json/2023_Merge.js"></script>
+        <script src="./json/2024_Merge.js"></script>
+        <script src="./json/2025_Merge.js"></script>
+        <script src="./json/StateBoundaries.js"></script>
+    </head>
+
+    <body>
+        <div style="display: flex;">
+            <div id="mapid" style="height: 740px; width: 320%;"></div>
+            <div id="sidebar" style="width: 100%; padding: 10px;">
+              <h2>Air Pollutants and Monitoring <br>Sites in the USA</h2>
+              <p>A darker color means a higher average <br>concentration of the selected pollutant.</p>
+              <br>
+              <p id="description"></p>
+              <p id="description2"></p>
+              <br> 
+              <p>Each point is a monitoring station that was active during the year. <br> A darker color means the station was active for more days.</p>
+              <div class="legend">
+                <p>0 days &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;365 days</p>
+                <div style="
+                width: 130px; 
+                height: 30px; 
+                background-image: linear-gradient(to left, black, white);">
+                </div>
+              </div>
+              <br> <br>
+              <p>A darker color on the base map indicates a higher concentration of pollutant.</p>
+              <div class ="legend">
+                <div id ="legendText">
+                <p>30 ppb &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;60 ppb</p>
+            </div>
+              <div id= "rasterLegend" style="
+                width: 130px; 
+                height: 30px; 
+                background-image: linear-gradient(to left, #153755, #E4E1EE);">
+                </div>
+                </div>
+                <br> <br> <br>
+                <button onclick="document.getElementById('myPopup').showModal()">Click here to learn more about this pollutant.</button>
+                <dialog id="myPopup">
+                    <div id = "popupText">
+                    </div>
+                    <form method="dialog">
+                    <button>Close</button>
+                    </form>
+                </dialog>
+            </div>
+          </div>
+        <style>
+            body {font-family: 'Georgia', sans-serif; }
+            body {background-color: #9AD5F5;}
+            .slider-container {
+            margin-right: 20px;
+            display: flex;
+            align-items: left;
+            flex-direction: column;
+            }
+
+            .slider {
+                width: 550px; 
+            }
+
+            .tick-container {
+                display: flex;
+                justify-content: space-between;
+                width: 550px;
+                margin-top: 5px;
+            }
+
+            .tick {
+                font-size: 12px; 
+            }
+            .text {
+                width: 30%;
+                padding: 10px;
+            }
+            .legend {
+                display: inline-block;
+                margin-left: 145px;
+            }
+            p { font-size: 15; }
+            #myPopup {
+            width: 80%; 
+            max-width: 800px;
+            }
+        </style>
+        <p>Select a year:</p>
+        <div class="slider-container">
+            <input type="range" min="2000" max="2025" value="1" class="slider" id="slider" oninput='f()'>
+                <div class="tick-container">
+                    <span class="tick">2000</span>
+                    <span class="tick">2005</span>
+                    <span class="tick">2010</span>
+                    <span class="tick">2015</span>
+                    <span class="tick">2020</span>
+                    <span class="tick">2025</span>
+                </div>
+            </div>
+        <p>Current Year: <span id="sliderValue"></span></p>
+<script>
+    var map = L.map('mapid').setView([39, -96], 5);
+
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+        maxZoom: 10,
+        attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+    }).addTo(map);
+
+var layerGroup = L.layerGroup();
+
+sliderYear = 2000
+var imageUrl1 = './Rasters/Ozone' + sliderYear + '.png';
+var imageUrl2 = './Rasters/Pm' + sliderYear + '.png';
+var imageUrl3 = './Rasters/Nitrogen' + sliderYear + '.png';
+
+var southWest = [25, -124.8];
+var northEast = [49.2, -67];
+var bounds = L.latLngBounds(southWest, northEast);
+
+var raster1 = L.imageOverlay(imageUrl1, bounds, {zIndex: 10});
+var raster2 = L.imageOverlay(imageUrl2, bounds, {zIndex: 10});
+var raster3 = L.imageOverlay(imageUrl3, bounds, {zIndex: 10});
+
+var Icon = L.icon({
+        iconUrl: 'https://www.greenwoodnursery.com/cdn/shop/files/tree-5378_1920.jpg',   
+        iconSize: [5,5],
+        popupAnchor: [0,0]
+        });
+        
+var Pointsmap = {
+    'Monitoring Stations': layerGroup
+};
+            
+var layerControl = L.control.layers({}, Pointsmap).addTo(map);
+var base = "Ozone"
+var message = ""
+var message2 = ""
+const rasterLegend = document.getElementById("rasterLegend");
+const legendText = document.getElementById("legendText");
+const popupText = document.getElementById("popupText")
+map.on('baselayerchange', function (e) {
+    currentBaseLayer = e.name;
+    if (currentBaseLayer == "Ozone") {message = "Chosen pollutant: Ozone (O3) <br> Ozone concentration was measured through the <br>maximum 8-hour running average for each day.";
+    base = "Ozone";
+    rasterLegend.style.backgroundImage = "linear-gradient(to left, #153755, #E4E1EE)";
+    legendText.innerHTML = "30 ppb &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; 60 ppb"
+    popupText.innerHTML = "Ozone, with the chemical formula O3, is an important gas in many atmospheric reactions. It forms the Ozone Layer high in the atmosphere, which helps absorb harmful UV radiation from the sun before it can reach the Earth and cause issues like skin damage. However, it can also form near the ground where we live as a product of reactions from pollutants like NO2 or methane. Because these reactions require sunlight, ozone is most common during the day. When breathed in, it engages in chemical reactions with the molecules in the lining of the airways, causing them to break down. This can lead to symptoms such as difficulty breathing and inflammation of the airways, and can lead to infection. It can also cause damage to farm crops and ecosystems. The WHO guideline concentration for ozone is 30 ppb. <br> <br>Sources: <br> https://www.epa.gov/ground-level-ozone-pollution/health-effects-ozone-pollution <br> https://www.epa.gov/ground-level-ozone-pollution/ground-level-ozone-basics <br> https://www.eea.europa.eu/en/analysis/publications/92-826-5409-5/page032new.html"}
+    else if (currentBaseLayer == "PM 2.5") {message = "Chosen pollutant: PM 2.5 <br> PM 2.5 concentration was measured through the <br>mean for each day.";
+    base = "PM2.5 - Local Conditions";
+    rasterLegend.style.backgroundImage = "linear-gradient(to left, #B4281D, #FCECD8)";
+    legendText.innerHTML = "5 ppb &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; 20 ppb";
+    popupText.innerHTML = "PM2.5 is the general name for many different types of particles that are 2.5 micrometers in diameter or smaller. This is around 30 times smaller than the diameter of a human hair. Most PM2.5 results from air pollution from sources such as power plants or vehicle emissions, either from being released directly or from chemical reactions from other emitted gases. Because of its small size, PM 2.5 can penetrate deep into the lungs and potentially even enter the bloodstream. This can lead to symptoms such as coughing and irritation of the airways as well as more serious ones like decreased lung function and even heart attacks and death. PM 2.5 is also a large source of impaired visibility, which can lead to car crashes and other accidents. The WHO guideline concentration for PM2.5 is 5 ppb. <br> <br>  Sources: <br> https://www.epa.gov/pm-pollution/particulate-matter-pm-basics <br> https://www.epa.gov/pm-pollution/health-and-environmental-effects-particulate-matter-pm <br> https://www.c40knowledgehub.org/s/article/WHO-Air-Quality-Guidelines"}
+    else if (currentBaseLayer == "Nitrogen Dioxide") {message = "Chosen pollutant: Nitrogen Dioxide (NO2) <br> Nitrogen dioxide concentration was measured through the <br>maximum 8-hour running average for each day."
+    base = "Nitrogen dioxide (NO2)";
+    rasterLegend.style.backgroundImage = "linear-gradient(to left, #60D049, #D8FBD9)";
+    legendText.innerHTML = "10 ppb &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; 60 ppb"
+    popupText.innerHTML = "Nitrogen Dioxide, with the chemical formula NO2, is a highly reactive gas which is primarily released from the burning of fossil fuels. Gas-powered vehicles are the largest source of NO2 emissions. Reactions involving NO2 are a large source of ozone at ground level. NO2 by itself can also cause health effects when breathed in, including inflammation and reduced lung function. There is also evidence that NO2 exposure in childhood can cause the development of asthma. NO2 exposure is also linked to cancer and autoimmune disorders among other conditions. The WHO guideline concentration for NO2 is 10 ppb.<br> <br> Sources: <br> https://www.epa.gov/no2-pollution/basic-information-about-no2 <br> https://www.lung.org/clean-air/outdoors/what-makes-air-unhealthy/nitrogen-dioxide <br> https://www.who.int/news-room/feature-stories/detail/what-are-the-who-air-quality-guidelines"}
+    document.getElementById("description").innerHTML = message;
+    addPoints()
+});
+var currentBaseLayer = "Ozone";
+
+var slider = document.getElementById('slider');
+var display = document.getElementById("sliderValue");
+slider.addEventListener("input", function() {
+    display.innerHTML = this.value;
+});
+display.innerHTML = 2000;
+
+f()
+
+L.geoJSON(stateBounds, {
+    style: function(feature) {
+        return {
+            color: "black",
+            weight: 1,
+            opacity: 0.6
+        };
+    }
+}).addTo(map);
+
+layerGroup.addTo(map);
+
+function f() {
+    var sliderYear = document.getElementById('slider').value;
+
+    map.removeLayer(raster1);
+    map.removeLayer(raster2);
+    map.removeLayer(raster3);
+
+    layerControl.removeLayer(raster1);
+    layerControl.removeLayer(raster2);
+    layerControl.removeLayer(raster3);
+
+    raster1 = L.imageOverlay('./Rasters/Ozone' + sliderYear + '.png', bounds);
+    raster2 = L.imageOverlay('./Rasters/Pm' + sliderYear + '.png', bounds);
+    raster3 = L.imageOverlay('./Rasters/Nitrogen' + sliderYear + '.png', bounds);
+
+    layerControl.addBaseLayer(raster1, 'Ozone'); 
+    layerControl.addBaseLayer(raster2, 'PM 2.5'); 
+    layerControl.addBaseLayer(raster3, 'Nitrogen Dioxide'); 
+
+    raster1.setZIndex(10);
+    raster2.setZIndex(10);
+    raster3.setZIndex(10);
+
+    if (currentBaseLayer == "Ozone") {raster1.addTo(map)}
+    else if (currentBaseLayer == "PM 2.5") {raster2.addTo(map)}
+    else if (currentBaseLayer == "Nitrogen Dioxide") {raster3.addTo(map)}
+}
+
+function addPoints() {
+    var sliderYear = document.getElementById('slider').value;
+    layerGroup.clearLayers();
+    var pointFile = 'year_' + sliderYear;
+    var data = window[pointFile];
+    
+    var currentPoints = L.geoJson(data, {
+    filter: function(feature) {
+        return feature.properties.Parameter_Name == base;
+        },
+    pointToLayer: function(feature, latlng) {
+        if (feature.properties.Parameter_Name === "Ozone") {
+            var concentration = (feature.properties.Arithmetic_Mean * 1000);
+        }
+        else {
+            var concentration = feature.properties.Arithmetic_Mean;
+        }
+        return L.circleMarker(latlng, {
+                color: 'black',
+                fillColor: findColor(feature.properties.Valid_Day_Count),
+                fillOpacity: 1,
+                weight: 1,
+                radius: 2
+            }).bindPopup("Average concentration of readings in ppb: " + concentration  + "<br> Highest concentration reading in ppb: " + feature.properties.F1st_Max_Value + "<br> Days active: " + feature.properties.Valid_Day_Count);
+        }
+    }).addTo(layerGroup);
+    var count = currentPoints.getLayers().length;
+    message2 = ("There were " + count + " EPA monitoring stations tracking this <br>pollutant in the year " + sliderYear + ".");
+    document.getElementById("description2").innerHTML = message2;
+}
+
+function findColor(days) {
+    var color = 255 - Math.round((days / 365) * 255);
+    return "rgb(" + color + "," + color + "," + color + ")";
+}
+    </script>
+    </body>
+</html>
